@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/api/create", "dest": "/api/create.js" },
+    { "src": "/api/list", "dest": "/api/list.js" },
+    { "src": "/api/message", "dest": "/api/message.js" }
+  ]
+}
