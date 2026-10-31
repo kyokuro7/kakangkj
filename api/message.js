@@ -1,17 +1,18 @@
-import fetch from 'node-fetch';
+const { cors, upstream } = require('./_lib');
 
-export default async (req, res) => {
-  const { mailbox, id } = req.query;
-  if (!mailbox || !id) {
-    res.status(400).json({ error: 'mailbox and id required' });
-    return;
+module.exports = async (req, res) => {
+  cors(res);
+  if (req.method === 'OPTIONS') return res.status(204).end();
+
+  const { mailbox, id } = req.query || {};
+  if (!mailbox || !id) return res.status(400).json({ error: 'mailbox and id required' });
+
+  try {
+    const resp = await upstream(`/mailbox/${encodeURIComponent(mailbox)}/${encodeURIComponent(id)}`);
+    if (resp.status !== 200) return res.status(404).json({ error: 'Message not found' });
+    const data = await resp.json();
+    return res.status(200).json(data);
+  } catch (err) {
+    return res.status(502).json({ error: 'Upstream error', detail: String(err && err.message || err) });
   }
-  const url = `https://ilovetempmail.com/mailbox/${mailbox}/${id}`;
-  const resp = await fetch(url);
-  if (resp.status !== 200) {
-    res.status(404).json({ error: 'Message not found' });
-    return;
-  }
-  const data = await resp.json(); // message details
-  res.status(200).json(data);
 };
